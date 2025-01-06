@@ -4,5 +4,9 @@
     <color name="white">#FFFFFFFF</color>
     <color name="text_color_non_dark">#303030</color>
     <color name="main_accent_color">#EC5F5F</color>
+    <color name="ui_ux">#0082CD</color>
+    <color name="free">#8D5EF2</color>
+    <color name="illustration">#FF5722</color>
+    <color name="web_design">#673AB7</color>
 
 </resources>

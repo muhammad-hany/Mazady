@@ -1,14 +1,14 @@
 package com.example.mazady.view
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.example.mazady.databinding.FragmentFirstBinding
+import com.example.mazady.databinding.FragmentCategoriesBinding
 import com.example.mazady.models.CategoryState
 import com.example.mazady.utils.gone
 import com.example.mazady.utils.show
@@ -19,7 +19,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class CategorySelectionFragment : Fragment() {
 
-    private var _binding: FragmentFirstBinding? = null
+    private var _binding: FragmentCategoriesBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel: CategorySelectionViewModel by viewModel()
@@ -29,7 +29,7 @@ class CategorySelectionFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        _binding = FragmentFirstBinding.inflate(inflater, container, false)
+        _binding = FragmentCategoriesBinding.inflate(inflater, container, false)
         return binding.root
 
     }
