@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.moshKotlin)
     implementation(libs.loggingInterceptor)
     implementation (libs.glide)
+    implementation(libs.androidx.activity)
 
 
     testImplementation(libs.junit)

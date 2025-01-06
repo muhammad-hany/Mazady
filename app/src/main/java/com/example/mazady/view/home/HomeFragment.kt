@@ -59,14 +59,21 @@ class HomeFragment : Fragment() {
         isCheckable = true
         chipStrokeWidth = 0f
         textSize = 16f
-        chipBackgroundColor = ContextCompat.getColorStateList(requireContext(), R.color.filter_chip_color)
-        setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.filter_chip_text_color))
+        chipBackgroundColor =
+            ContextCompat.getColorStateList(requireContext(), R.color.filter_chip_color)
+        setTextColor(
+            ContextCompat.getColorStateList(
+                requireContext(),
+                R.color.filter_chip_text_color
+            )
+        )
         setOnCheckedChangeListener { _, isChecked ->
             if (!isChecked) return@setOnCheckedChangeListener
-            when(text) {
+            when (text) {
                 "All" -> {
                     clearFilters()
                 }
+
                 else -> {
                     applyCourseFilter(text)
                 }
@@ -79,17 +86,20 @@ class HomeFragment : Fragment() {
         val filteredCourses = COURSES.filter {
             it.tags.any { tag -> tag.title == text }
         }
-        coursesAdapter.submitList(filteredCourses)
-        binding.upcomingCoursesList.scrollToPosition(0)
+        coursesAdapter.submitList(filteredCourses) {
+            binding.upcomingCoursesList.scrollToPosition(0)
+        }
     }
 
     private fun clearFilters() {
-        coursesAdapter.submitList(COURSES)
-        binding.upcomingCoursesList.scrollToPosition(0)
+        coursesAdapter.submitList(COURSES) {
+            binding.upcomingCoursesList.scrollToPosition(0)
+        }
     }
 
     private fun setupLiveContactsList() {
-        binding.liveContactsList.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        binding.liveContactsList.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         val liveContactAdapter = LiveContactAdapter()
         liveContactAdapter.submitList(AVATARS)
         binding.liveContactsList.adapter = liveContactAdapter
@@ -112,7 +122,7 @@ class HomeFragment : Fragment() {
         private val illustrationCourseTag = CourseTag("Illustration", R.color.illustration)
         private val webDesignCourseTag = CourseTag("Web Design", R.color.web_design)
         val tags = listOf(freeCourseTag, uixCourseTag, illustrationCourseTag, webDesignCourseTag)
-        val filters = listOf("All" , *tags.map { it.title }.toTypedArray())
+        val filters = listOf("All", *tags.map { it.title }.toTypedArray())
         val COURSES = listOf(
             Course(
                 "UI/UX Design",
@@ -167,6 +177,6 @@ class HomeFragment : Fragment() {
                 3
             ),
 
-        )
+            )
     }
 }

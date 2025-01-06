@@ -14,7 +14,7 @@ import kotlin.math.max
 
 class LinePagerIndicatorDecoration : RecyclerView.ItemDecoration() {
     private val colorActive = Color.parseColor("#EC5F5F")
-    private val colorInactive = Color.parseColor("#EEEEEE")
+    private val colorInactive = Color.parseColor("#C7C9D9")
 
     /**
      * Height of the space the indicator takes up at the bottom of the view.
