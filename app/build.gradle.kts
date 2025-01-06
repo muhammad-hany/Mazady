@@ -65,6 +65,8 @@ dependencies {
     implementation(libs.moshiConverterFactory)
     implementation(libs.moshKotlin)
     implementation(libs.loggingInterceptor)
+    implementation (libs.glide)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
