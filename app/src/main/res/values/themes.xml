@@ -3,6 +3,9 @@
     <style name="Base.Theme.Mazady" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:textColor">@color/text_color_non_dark</item>
+        <item name="fontFamily">@font/poppins_regular</item>
+        <item name="colorOnSurface">@color/main_accent_color</item>
     </style>
 
     <style name="Theme.Mazady" parent="Base.Theme.Mazady" />
