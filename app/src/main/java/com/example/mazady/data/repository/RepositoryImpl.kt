@@ -5,7 +5,9 @@ import com.example.mazady.models.Category
 import com.example.mazady.models.CategoryProperty
 import com.example.mazady.models.Error
 import com.example.mazady.models.MazadyResult
+import com.example.mazady.models.PropertyOption
 import com.example.mazady.models.Success
+import kotlin.random.Random
 
 class RepositoryImpl(private val remoteDataSource: RemoteDataSource) : Repository {
 
@@ -26,7 +28,7 @@ class RepositoryImpl(private val remoteDataSource: RemoteDataSource) : Repositor
         return try {
             val response = remoteDataSource.getCategoryProperties(categoryId)
             if (response.code == 200 && !response.data.isNullOrEmpty()) {
-                Success(response.data)
+                Success(response.data.map { it.addedOtherOption() })
             } else {
                 Error(Exception(response.msg))
             }
@@ -39,7 +41,7 @@ class RepositoryImpl(private val remoteDataSource: RemoteDataSource) : Repositor
         return try {
             val response = remoteDataSource.getOptionsChild(optionId)
             if (response.code == 200 && !response.data.isNullOrEmpty()) {
-                Success(response.data)
+                Success(response.data.map { it.addedOtherOption() } )
             } else {
                 Error(Exception(response.msg))
             }
@@ -47,4 +49,16 @@ class RepositoryImpl(private val remoteDataSource: RemoteDataSource) : Repositor
             Error(e)
         }
     }
+
+    private fun CategoryProperty.addedOtherOption() = copy(
+        options = if (!options.isNullOrEmpty()) options.plus(createOtherPropertyOption(id ?: -1)) else null
+    )
+
+    private fun createOtherPropertyOption(parentId: Int) = PropertyOption(
+        id = Random.nextInt(100, 1000),
+        name = "other",
+        slug = "other",
+        parentId = parentId,
+        child = true
+    )
 }

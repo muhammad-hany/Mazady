@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mazady.R
 import com.example.mazady.databinding.CategoryListItemBinding
 import com.example.mazady.models.Category
+import com.example.mazady.models.CategoryOtherPropertyClick
 import com.example.mazady.models.CategoryPropertyClick
 import com.example.mazady.models.CategoryPropertyInput
 import com.example.mazady.models.CategoryPropertyListItem
@@ -55,7 +56,12 @@ class CategoryAdapter(private val onItemClickAction: (ItemClickAction) -> Unit) 
             val listItems =
                 item.data.options?.mapNotNull { it.name }?.toTypedArray() ?: emptyArray()
             applySimpleList(listItems, item.selectionIndex) { position ->
-                onItemClickAction(CategoryPropertyClick(item.data, position))
+                val selectedItem = item.data.options?.getOrNull(position)
+                if (selectedItem != null && selectedItem.slug == "other") {
+                    onItemClickAction(CategoryOtherPropertyClick(item.data, position))
+                } else {
+                    onItemClickAction(CategoryPropertyClick(item.data, position))
+                }
             }
         }
 
@@ -99,15 +105,17 @@ class CategoryAdapter(private val onItemClickAction: (ItemClickAction) -> Unit) 
             categoryBinding.mainCategory.showAndEnable()
             categoryBinding.mainCategory.hint = item.data.name
             (categoryBinding.mainCategory.editText as? TextInputEditText)?.apply {
-                if (item.inputText != null && item.inputText != text.toString()) {
-                    setText(item.inputText)
-                    setSelection(item.inputText.length)
+                if (item.inputText != null) {
+                    if (item.inputText != text.toString()) {
+                        setText(item.inputText)
+                        setSelection(item.inputText.length)
+                    }
                 } else {
                     text = null
                 }
                 doAfterTextChanged { text ->
                     // making sure change from user
-                    if(!hasFocus()) return@doAfterTextChanged
+                    if (!hasFocus()) return@doAfterTextChanged
 
                     // adding some delay until the user finish typing to avoid multiple requests
                     runnable?.let { this@CategoryAdapter.handler.removeCallbacks(it) }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mazady.data.repository.Repository
 import com.example.mazady.models.Category
+import com.example.mazady.models.CategoryOtherPropertyClick
 import com.example.mazady.models.CategoryProperty
 import com.example.mazady.models.CategoryPropertyClick
 import com.example.mazady.models.CategoryPropertyInput
@@ -45,6 +46,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             is SubCategoryClick -> onItemSelected(clickAction)
             is CategoryPropertyClick -> onItemSelected(clickAction)
             is CategoryPropertyInput -> onItemSelected(clickAction)
+            is CategoryOtherPropertyClick -> onItemSelected(clickAction)
         }
     }
 
@@ -144,6 +146,39 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
         viewModelScope.launch {
             _userSelectionFlow.emit(modifiedSelections)
         }
+    }
+
+    private fun onItemSelected(clickAction: CategoryOtherPropertyClick) {
+        val currentPropertyIndex = userSelectionState.indexOfFirst {
+            it is CategoryPropertyListItem && it.data == clickAction.categoryProperty
+        }
+        val otherOption = clickAction.categoryProperty.options?.first { it.slug == "other" }
+            ?: return //TODO handle this case
+        // checking if other property already added
+        if (userSelectionState.any { it is CategoryPropertyListItem && it.data.parentId == otherOption.id }) return
+
+        val addedProperty = createOtherProperty(otherOption, clickAction.categoryProperty.name)
+        val addedPropertyListItem = CategoryPropertyListItem(addedProperty, clickAction.index)
+        val modifiedSelections = userSelectionState.toMutableList()
+        modifiedSelections[currentPropertyIndex] = (modifiedSelections[currentPropertyIndex] as CategoryPropertyListItem).copy(
+            selectionIndex = clickAction.index
+        )
+        modifiedSelections.add(currentPropertyIndex + 1, addedPropertyListItem)
+        viewModelScope.launch {
+            _userSelectionFlow.emit(modifiedSelections)
+        }
+    }
+
+    private fun createOtherProperty(options: PropertyOption, parentName: String?): CategoryProperty {
+        return CategoryProperty(
+            slug = "other",
+            name = "Other $parentName",
+            parentId = options.id ?: 0,
+            options = null,
+            id = null,
+            image = null,
+            description = null,
+        )
     }
 
     private suspend fun getPropertiesForSubCategory(subCategory: Category): List<CategoryProperty> {

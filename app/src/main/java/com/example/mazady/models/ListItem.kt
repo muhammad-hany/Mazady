@@ -17,5 +17,9 @@ data class CategoryPropertyClick(
     val categoryProperty: CategoryProperty,
     val index: Int,
 ) : ItemClickAction()
+
 data class CategoryPropertyInput(val categoryProperty: CategoryProperty, val inputText: String) :
+    ItemClickAction()
+
+data class CategoryOtherPropertyClick(val categoryProperty: CategoryProperty, val index: Int) :
     ItemClickAction()
