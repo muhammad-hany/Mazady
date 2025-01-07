@@ -6,6 +6,7 @@ import com.example.mazady.data.repository.Repository
 import com.example.mazady.models.Category
 import com.example.mazady.models.CategoryProperty
 import com.example.mazady.models.CategoryPropertyClick
+import com.example.mazady.models.CategoryPropertyInput
 import com.example.mazady.models.CategoryPropertyListItem
 import com.example.mazady.models.Error
 import com.example.mazady.models.ItemClickAction
@@ -26,9 +27,6 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
     val userSelectionFlow = _userSelectionFlow.asStateFlow()
     private val userSelectionState get() = _userSelectionFlow.value
 
-    private val _categoriesFlow = MutableStateFlow(emptyList<Category>())
-    val categoriesFlow = _categoriesFlow.asStateFlow()
-
     init {
         viewModelScope.launch {
             when (val result = repository.getAllCategories()) {
@@ -36,7 +34,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
                     _userSelectionFlow.emit(listOf(MainCategoryListItem(result.data, -1)))
                 }
 
-                is Error -> {}
+                is Error -> {} //TODO handle error state and differ error from empty state
             }
         }
     }
@@ -46,6 +44,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             is MainCategoryClick -> onItemSelected(clickAction)
             is SubCategoryClick -> onItemSelected(clickAction)
             is CategoryPropertyClick -> onItemSelected(clickAction)
+            is CategoryPropertyInput -> onItemSelected(clickAction)
         }
     }
 
@@ -95,12 +94,11 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             // check if unselected option has children
             var itemsToRemove: List<ListItem> = emptyList()
             if (currentPropertyState.selectionIndex != -1) {
-                val unselectedOption = currentPropertyState.data.options?.getOrNull(currentPropertyState.selectionIndex)
-                if (unselectedOption != null) {
+                val unselectedOption =
+                    currentPropertyState.data.options?.getOrNull(currentPropertyState.selectionIndex)
+                if (unselectedOption?.id != null) {
                     // remove child options
-                    itemsToRemove = userSelectionState.filter {
-                        it is CategoryPropertyListItem && it.data.parentId == unselectedOption.id
-                    }
+                    itemsToRemove = getChildrenRecursively(unselectedOption.id)
                 }
             }
 
@@ -110,13 +108,41 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             // does selected options have children
             val childProperties =
                 getChildOptions(selectedOption).map { CategoryPropertyListItem(it, -1) }
-
             val modifiedSelections = userSelectionState.toMutableList()
             modifiedSelections[currentPropertyIndex] = currentPropertyState
             if (itemsToRemove.isNotEmpty()) modifiedSelections.removeAll(itemsToRemove)
             modifiedSelections.addAll(currentPropertyIndex + 1, childProperties)
             _userSelectionFlow.emit(modifiedSelections)
 
+        }
+    }
+
+    private fun getChildrenRecursively(optionId: Int): List<ListItem> {
+        val result: MutableList<ListItem> = mutableListOf()
+        userSelectionState.filterIsInstance<CategoryPropertyListItem>().forEach {
+            if (it.data.parentId == optionId) {
+                val children = it.data.options?.mapNotNull { option ->
+                    val id = option.id ?: return@mapNotNull null
+                    getChildrenRecursively(id)
+                }?.flatten() ?: emptyList()
+                result.addAll(listOf(it) + children)
+            }
+        }
+        return result
+    }
+
+    private fun onItemSelected(click: CategoryPropertyInput) {
+        val currentPropertyIndex = userSelectionState.indexOfFirst {
+            it is CategoryPropertyListItem && it.data == click.categoryProperty
+        }
+        var currentPropertyState =
+            userSelectionState[currentPropertyIndex] as? CategoryPropertyListItem
+                ?: return //TODO handle this case
+        currentPropertyState = currentPropertyState.copy(inputText = click.inputText)
+        val modifiedSelections = userSelectionState.toMutableList()
+        modifiedSelections[currentPropertyIndex] = currentPropertyState
+        viewModelScope.launch {
+            _userSelectionFlow.emit(modifiedSelections)
         }
     }
 

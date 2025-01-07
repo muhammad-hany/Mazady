@@ -38,7 +38,7 @@ class CategoryListFragment : Fragment() {
         setupSelectionList()
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.userSelectionFlow.collectLatest { items ->
                     if (items.isEmpty()) return@collectLatest
                     adapter.submitList(items)
