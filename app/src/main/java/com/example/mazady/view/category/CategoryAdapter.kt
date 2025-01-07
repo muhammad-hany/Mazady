@@ -102,6 +102,8 @@ class CategoryAdapter(private val onItemClickAction: (ItemClickAction) -> Unit) 
                 if (item.inputText != null && item.inputText != text.toString()) {
                     setText(item.inputText)
                     setSelection(item.inputText.length)
+                } else {
+                    text = null
                 }
                 doAfterTextChanged { text ->
                     // making sure change from user
