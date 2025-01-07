@@ -1,12 +1,14 @@
 package com.example.mazady.di
 
-import com.example.mazady.data.network.RetrofitClient
 import com.example.mazady.data.api.MazadyApi
 import com.example.mazady.data.datasource.RemoteDataSource
 import com.example.mazady.data.datasource.RemoteDataSourceImpl
+import com.example.mazady.data.network.RetrofitClient
 import com.example.mazady.data.repository.Repository
 import com.example.mazady.data.repository.RepositoryImpl
 import com.example.mazady.view.CategorySelectionViewModel
+import com.example.mazady.view.CategoryViewModel
+import com.example.mazady.view.category.CategoryListViewModel
 import com.squareup.moshi.Moshi
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -43,7 +45,8 @@ val dataModule = module {
 }
 
 val viewModule = module {
+
     viewModel {
-        CategorySelectionViewModel(repository = get())
+        CategoryListViewModel(repository = get())
     }
 }

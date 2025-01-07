@@ -13,3 +13,8 @@ fun View.hide() {
 fun View.gone() {
     visibility = View.GONE
 }
+
+fun View.showAndEnable() {
+    show()
+    isEnabled = true
+}

@@ -14,4 +14,8 @@ class RemoteDataSourceImpl(private val mazadyApi: MazadyApi) : RemoteDataSource 
     override suspend fun getCategoryProperties(categoryId: Int): MazadyApiResponse<List<CategoryProperty>> {
         return mazadyApi.getCategoryProperties(categoryId)
     }
+
+    override suspend fun getOptionsChild(optionId: Int): MazadyApiResponse<List<CategoryProperty>> {
+        return mazadyApi.getOptionsChild(optionId)
+    }
 }

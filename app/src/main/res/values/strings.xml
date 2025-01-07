@@ -43,7 +43,8 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
-    <string name="secondary_category">Secondary Category</string>
+    <string name="secondary_category">Sub Category</string>
     <string name="main_category">Main Category</string>
-    <string name="sub_category_property">Sub Category Property</string>
+    <string name="sub_category_property">Category Property</string>
+    <string name="property_options">Property Options</string>
 </resources>
