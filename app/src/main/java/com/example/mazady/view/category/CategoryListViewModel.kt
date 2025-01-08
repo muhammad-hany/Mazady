@@ -85,13 +85,13 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
         viewModelScope.launch {
             // update main category selection index
             var categoryListItem = userSelectionState.firstOrNull() as? MainCategoryListItem
-                ?: return@launch //TODO handle this case
+                ?: return@launch
             // if the same category clicked, do nothing
             if (clickAction.index == categoryListItem.selectionIndex) return@launch
 
             categoryListItem = categoryListItem.copy(selectionIndex = clickAction.index, categoryError = false)
             val subCategories =
-                clickAction.category.children ?: return@launch //TODO handle this case
+                clickAction.category.children ?: return@launch
             _userSelectionFlow.emit(
                 listOf(categoryListItem, SubCategoryListItem(subCategories, -1))
             )
@@ -104,7 +104,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             // update subCategory selection index
             var subCategoryListItem =
                 userSelectionState.firstOrNull { it is SubCategoryListItem } as? SubCategoryListItem
-                    ?: return@launch //TODO handle this case
+                    ?: return@launch
 
             // if the same category clicked, do nothing
             if (click.index == subCategoryListItem.selectionIndex) return@launch
@@ -113,7 +113,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             val propertiesItems =
                 getPropertiesForSubCategory(click.category).map { CategoryPropertyListItem(it, -1) }
             val mainCategory = userSelectionState.firstOrNull() as? MainCategoryListItem
-                ?: return@launch //TODO handle this case
+                ?: return@launch
             _userSelectionFlow.emit(
                 (listOf(mainCategory, subCategoryListItem) + propertiesItems)
             )
@@ -125,11 +125,11 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
         viewModelScope.launch {
 
             val selectedOption = click.categoryProperty.options?.get(click.index)
-                ?: return@launch //TODO handle this case
+                ?: return@launch
             val currentPropertyIndex = userSelectionState.indexOfFirst {
                 it is CategoryPropertyListItem && it.data == click.categoryProperty
             }
-            if (currentPropertyIndex == -1) return@launch //TODO handle this case
+            if (currentPropertyIndex == -1) return@launch
             var currentPropertyState =
                 userSelectionState[currentPropertyIndex] as? CategoryPropertyListItem
                     ?: return@launch
@@ -183,7 +183,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
         }
         var currentPropertyState =
             userSelectionState[currentPropertyIndex] as? CategoryPropertyListItem
-                ?: return //TODO handle this case
+                ?: return
 
         currentPropertyState = currentPropertyState.copy(inputText = click.inputText, propertyError = false)
         val modifiedSelections = userSelectionState.toMutableList()
@@ -198,7 +198,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             it is CategoryPropertyListItem && it.data == clickAction.categoryProperty
         }
         val otherOption = clickAction.categoryProperty.options?.first { it.slug == "other" }
-            ?: return //TODO handle this case
+            ?: return
 
         // checking if other property already added
         if (userSelectionState.any { it is CategoryPropertyListItem && it.data.parentId == otherOption.id }) return
@@ -232,7 +232,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
     }
 
     private suspend fun getPropertiesForSubCategory(subCategory: Category): List<CategoryProperty> {
-        val id = subCategory.id ?: return emptyList()//TODO handle this case
+        val id = subCategory.id ?: return emptyList()
         _screenStateFlow.emit(screenState.copy(isLoading = true))
         return when (val result = repository.getCategoryProperties(id)) {
             is Success -> {
@@ -253,7 +253,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
     }
 
     private suspend fun getChildOptions(option: PropertyOption): List<CategoryProperty> {
-        val id = option.id ?: return emptyList()//TODO handle this case
+        val id = option.id ?: return emptyList()
         _screenStateFlow.emit(screenState.copy(isLoading = true))
         return when (val result = repository.getOptionsChild(id)) {
             is Success -> {
