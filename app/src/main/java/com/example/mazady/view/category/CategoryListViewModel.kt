@@ -64,6 +64,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
                 is SubCategoryListItem -> it.copy(categoryError = it.hasError)
             }
         }
+        if (!hasOneError) repository.submitItems(modifiedList)
         viewModelScope.launch {
             _userSelectionFlow.emit(modifiedList)
         }

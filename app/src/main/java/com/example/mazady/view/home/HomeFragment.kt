@@ -142,7 +142,6 @@ class HomeFragment : Fragment() {
                 "Learn the basics of Illustration",
                 "https://images.pexels.com/photos/4348403/pexels-photo-4348403.jpeg",
                 listOf(
-                    freeCourseTag,
                     illustrationCourseTag
                 ),
                 "John Doe",
@@ -155,7 +154,6 @@ class HomeFragment : Fragment() {
                 "Learn the basics of Web Design",
                 "https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
                 listOf(
-                    freeCourseTag,
                     webDesignCourseTag
                 ),
                 "Jane Doe",

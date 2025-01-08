@@ -4,12 +4,15 @@ import com.example.mazady.data.datasource.RemoteDataSource
 import com.example.mazady.models.Category
 import com.example.mazady.models.CategoryProperty
 import com.example.mazady.models.Error
+import com.example.mazady.models.ListItem
 import com.example.mazady.models.MazadyResult
 import com.example.mazady.models.PropertyOption
 import com.example.mazady.models.Success
 import kotlin.random.Random
 
 class RepositoryImpl(private val remoteDataSource: RemoteDataSource) : Repository {
+
+    private val submittedItems = mutableListOf<ListItem>()
 
     override suspend fun getAllCategories(): MazadyResult<List<Category>> {
         return try {
@@ -49,6 +52,17 @@ class RepositoryImpl(private val remoteDataSource: RemoteDataSource) : Repositor
             Error(e)
         }
     }
+
+    override fun submitItems(items: List<ListItem>) {
+        submittedItems.clear()
+        submittedItems.addAll(items)
+    }
+
+    override fun clearItems() {
+        submittedItems.clear()
+    }
+
+    override fun getSubmittedItems(): List<ListItem> = submittedItems.toList()
 
     private fun CategoryProperty.addedOtherOption() = copy(
         options = if (!options.isNullOrEmpty()) options.plus(createOtherPropertyOption(id ?: -1)) else null

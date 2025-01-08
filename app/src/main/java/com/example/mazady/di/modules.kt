@@ -7,6 +7,7 @@ import com.example.mazady.data.network.RetrofitClient
 import com.example.mazady.data.repository.Repository
 import com.example.mazady.data.repository.RepositoryImpl
 import com.example.mazady.view.category.CategoryListViewModel
+import com.example.mazady.view.presenter.PresenterViewModel
 import com.squareup.moshi.Moshi
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -46,5 +47,9 @@ val viewModule = module {
 
     viewModel {
         CategoryListViewModel(repository = get())
+    }
+
+    viewModel {
+        PresenterViewModel(repository = get())
     }
 }

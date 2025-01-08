@@ -18,7 +18,7 @@
 
     <fragment
         android:id="@+id/SecondFragment"
-        android:name="com.example.mazady.view.category.CategoryPresenterFragment"
+        android:name="com.example.mazady.view.presenter.CategoryPresenterFragment"
         android:label="@string/second_fragment_label"
         tools:layout="@layout/category_presenter_fragment" />
 </navigation>
