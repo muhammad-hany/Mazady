@@ -3,5 +3,7 @@
     <style name="Base.Theme.Mazady" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="fontFamily">@font/poppins_regular</item>
+        <item name="colorOnSurface">@color/main_accent_color</item>
     </style>
 </resources>
