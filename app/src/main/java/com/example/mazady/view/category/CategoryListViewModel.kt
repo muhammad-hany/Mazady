@@ -75,7 +75,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             is MainCategoryClick -> onItemSelected(clickAction)
             is SubCategoryClick -> onItemSelected(clickAction)
             is CategoryPropertyClick -> onItemSelected(clickAction)
-            is CategoryPropertyInput -> onItemSelected(clickAction)
+            is CategoryPropertyInput -> onPropertyInput(clickAction)
             is CategoryOtherPropertyClick -> onItemSelected(clickAction)
         }
     }
@@ -85,6 +85,8 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             // update main category selection index
             var categoryListItem = userSelectionState.firstOrNull() as? MainCategoryListItem
                 ?: return@launch //TODO handle this case
+            // if the same category clicked, do nothing
+            if (clickAction.index == categoryListItem.selectionIndex) return@launch
 
             categoryListItem = categoryListItem.copy(selectionIndex = clickAction.index, categoryError = false)
             val subCategories =
@@ -102,6 +104,10 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             var subCategoryListItem =
                 userSelectionState.firstOrNull { it is SubCategoryListItem } as? SubCategoryListItem
                     ?: return@launch //TODO handle this case
+
+            // if the same category clicked, do nothing
+            if (click.index == subCategoryListItem.selectionIndex) return@launch
+
             subCategoryListItem = subCategoryListItem.copy(selectionIndex = click.index, categoryError = false)
             val propertiesItems =
                 getPropertiesForSubCategory(click.category).map { CategoryPropertyListItem(it, -1) }
@@ -116,6 +122,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
 
     private fun onItemSelected(click: CategoryPropertyClick) {
         viewModelScope.launch {
+
             val selectedOption = click.categoryProperty.options?.get(click.index)
                 ?: return@launch //TODO handle this case
             val currentPropertyIndex = userSelectionState.indexOfFirst {
@@ -125,6 +132,9 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             var currentPropertyState =
                 userSelectionState[currentPropertyIndex] as? CategoryPropertyListItem
                     ?: return@launch
+
+            // if the same option clicked, do nothing
+            if (currentPropertyState.selectionIndex == click.index) return@launch
 
             // check if unselected option has children
             var itemsToRemove: List<ListItem> = emptyList()
@@ -166,13 +176,14 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
         return result
     }
 
-    private fun onItemSelected(click: CategoryPropertyInput) {
+    private fun onPropertyInput(click: CategoryPropertyInput) {
         val currentPropertyIndex = userSelectionState.indexOfFirst {
             it is CategoryPropertyListItem && it.data == click.categoryProperty
         }
         var currentPropertyState =
             userSelectionState[currentPropertyIndex] as? CategoryPropertyListItem
                 ?: return //TODO handle this case
+
         currentPropertyState = currentPropertyState.copy(inputText = click.inputText, propertyError = false)
         val modifiedSelections = userSelectionState.toMutableList()
         modifiedSelections[currentPropertyIndex] = currentPropertyState
@@ -187,6 +198,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
         }
         val otherOption = clickAction.categoryProperty.options?.first { it.slug == "other" }
             ?: return //TODO handle this case
+
         // checking if other property already added
         if (userSelectionState.any { it is CategoryPropertyListItem && it.data.parentId == otherOption.id }) return
 
