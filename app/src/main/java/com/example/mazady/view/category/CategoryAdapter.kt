@@ -136,7 +136,7 @@ class CategoryAdapter(private val onItemClickAction: (ItemClickAction) -> Unit) 
                     runnable = Runnable {
                         onItemClickAction(CategoryPropertyInput(item.data, text.toString()))
                     }
-                    runnable?.let { this@CategoryAdapter.handler.postDelayed(it, 800) }
+                    runnable?.let { this@CategoryAdapter.handler.postDelayed(it, 1000) }
                 }
             }
         }
