@@ -37,6 +37,12 @@ class CategoryAdapter(private val onItemClickAction: (ItemClickAction) -> Unit) 
                 is SubCategoryListItem -> bindSubCategory(item)
                 is CategoryPropertyListItem -> bindCategoryProperty(item)
             }
+            // checking if there is an error
+            categoryBinding.mainCategory.error = if(item.showError) {
+                itemView.context.getString(R.string.required_field)
+            } else {
+                null
+            }
         }
 
         private fun bindMainCategory(item: MainCategoryListItem) {
@@ -113,6 +119,14 @@ class CategoryAdapter(private val onItemClickAction: (ItemClickAction) -> Unit) 
                 } else {
                     text = null
                 }
+
+                // checking if there is an error
+                error = if(item.showError) {
+                    itemView.context.getString(R.string.required_field)
+                } else {
+                    null
+                }
+
                 doAfterTextChanged { text ->
                     // making sure change from user
                     if (!hasFocus()) return@doAfterTextChanged
@@ -122,7 +136,7 @@ class CategoryAdapter(private val onItemClickAction: (ItemClickAction) -> Unit) 
                     runnable = Runnable {
                         onItemClickAction(CategoryPropertyInput(item.data, text.toString()))
                     }
-                    runnable?.let { this@CategoryAdapter.handler.postDelayed(it, 1000) }
+                    runnable?.let { this@CategoryAdapter.handler.postDelayed(it, 800) }
                 }
             }
         }
@@ -143,11 +157,7 @@ class CategoryAdapter(private val onItemClickAction: (ItemClickAction) -> Unit) 
         override fun areContentsTheSame(oldItem: ListItem, newItem: ListItem): Boolean {
             return if (oldItem.javaClass.name != newItem.javaClass.name) false
             else {
-                when (oldItem) {
-                    is MainCategoryListItem -> oldItem.selectionIndex == (newItem as MainCategoryListItem).selectionIndex
-                    is SubCategoryListItem -> oldItem.selectionIndex == (newItem as SubCategoryListItem).selectionIndex
-                    is CategoryPropertyListItem -> oldItem.selectionIndex == (newItem as CategoryPropertyListItem).selectionIndex && oldItem.inputText == newItem.inputText
-                }
+                oldItem.selection == newItem.selection && oldItem.userInput == newItem.userInput && oldItem.showError == newItem.showError
             }
         }
     }

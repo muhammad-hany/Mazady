@@ -15,6 +15,7 @@ import com.example.mazady.models.ListItem
 import com.example.mazady.models.MainCategoryClick
 import com.example.mazady.models.MainCategoryListItem
 import com.example.mazady.models.PropertyOption
+import com.example.mazady.models.ScreenState
 import com.example.mazady.models.SubCategoryClick
 import com.example.mazady.models.SubCategoryListItem
 import com.example.mazady.models.Success
@@ -28,16 +29,45 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
     val userSelectionFlow = _userSelectionFlow.asStateFlow()
     private val userSelectionState get() = _userSelectionFlow.value
 
+    private val _screenStateFlow = MutableStateFlow(ScreenState())
+    val screenStateFlow = _screenStateFlow.asStateFlow()
+    private val screenState get() = _screenStateFlow.value
+
     init {
         viewModelScope.launch {
+            _screenStateFlow.emit(screenState.copy(isLoading = true))
             when (val result = repository.getAllCategories()) {
                 is Success -> {
+                    _screenStateFlow.emit(screenState.copy(isLoading = false))
                     _userSelectionFlow.emit(listOf(MainCategoryListItem(result.data, -1)))
                 }
 
-                is Error -> {} //TODO handle error state and differ error from empty state
+                is Error -> {
+                    _screenStateFlow.emit(
+                        screenState.copy(
+                            isLoading = false,
+                            error = result.error.message
+                        )
+                    )
+                }
             }
         }
+    }
+
+    fun validateData(): Boolean {
+        var hasOneError = false
+        val modifiedList = userSelectionState.map {
+            if (!hasOneError) hasOneError = it.hasError
+            when(it) {
+                is MainCategoryListItem -> it.copy(categoryError = it.hasError)
+                is CategoryPropertyListItem -> it.copy(propertyError = it.hasError)
+                is SubCategoryListItem -> it.copy(categoryError = it.hasError)
+            }
+        }
+        viewModelScope.launch {
+            _userSelectionFlow.emit(modifiedList)
+        }
+        return !hasOneError
     }
 
     fun onItemClicked(clickAction: ItemClickAction) {
@@ -55,12 +85,14 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             // update main category selection index
             var categoryListItem = userSelectionState.firstOrNull() as? MainCategoryListItem
                 ?: return@launch //TODO handle this case
-            categoryListItem = categoryListItem.copy(selectionIndex = clickAction.index)
+
+            categoryListItem = categoryListItem.copy(selectionIndex = clickAction.index, categoryError = false)
             val subCategories =
                 clickAction.category.children ?: return@launch //TODO handle this case
             _userSelectionFlow.emit(
                 listOf(categoryListItem, SubCategoryListItem(subCategories, -1))
             )
+            _screenStateFlow.emit(screenState.copy(submitButtonVisible = false))
         }
     }
 
@@ -70,7 +102,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             var subCategoryListItem =
                 userSelectionState.firstOrNull { it is SubCategoryListItem } as? SubCategoryListItem
                     ?: return@launch //TODO handle this case
-            subCategoryListItem = subCategoryListItem.copy(selectionIndex = click.index)
+            subCategoryListItem = subCategoryListItem.copy(selectionIndex = click.index, categoryError = false)
             val propertiesItems =
                 getPropertiesForSubCategory(click.category).map { CategoryPropertyListItem(it, -1) }
             val mainCategory = userSelectionState.firstOrNull() as? MainCategoryListItem
@@ -78,6 +110,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             _userSelectionFlow.emit(
                 (listOf(mainCategory, subCategoryListItem) + propertiesItems)
             )
+            _screenStateFlow.emit(screenState.copy(submitButtonVisible = true))
         }
     }
 
@@ -105,7 +138,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
             }
 
             // updating selection state
-            currentPropertyState = currentPropertyState.copy(selectionIndex = click.index)
+            currentPropertyState = currentPropertyState.copy(selectionIndex = click.index, propertyError = false)
 
             // does selected options have children
             val childProperties =
@@ -140,7 +173,7 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
         var currentPropertyState =
             userSelectionState[currentPropertyIndex] as? CategoryPropertyListItem
                 ?: return //TODO handle this case
-        currentPropertyState = currentPropertyState.copy(inputText = click.inputText)
+        currentPropertyState = currentPropertyState.copy(inputText = click.inputText, propertyError = false)
         val modifiedSelections = userSelectionState.toMutableList()
         modifiedSelections[currentPropertyIndex] = currentPropertyState
         viewModelScope.launch {
@@ -160,19 +193,23 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
         val addedProperty = createOtherProperty(otherOption, clickAction.categoryProperty.name)
         val addedPropertyListItem = CategoryPropertyListItem(addedProperty, clickAction.index)
         val modifiedSelections = userSelectionState.toMutableList()
-        modifiedSelections[currentPropertyIndex] = (modifiedSelections[currentPropertyIndex] as CategoryPropertyListItem).copy(
-            selectionIndex = clickAction.index
-        )
+        modifiedSelections[currentPropertyIndex] =
+            (modifiedSelections[currentPropertyIndex] as CategoryPropertyListItem).copy(
+                selectionIndex = clickAction.index, propertyError = false
+            )
         modifiedSelections.add(currentPropertyIndex + 1, addedPropertyListItem)
         viewModelScope.launch {
             _userSelectionFlow.emit(modifiedSelections)
         }
     }
 
-    private fun createOtherProperty(options: PropertyOption, parentName: String?): CategoryProperty {
+    private fun createOtherProperty(
+        options: PropertyOption,
+        parentName: String?
+    ): CategoryProperty {
         return CategoryProperty(
             slug = "other",
-            name = "Other $parentName",
+            name = "User input $parentName",
             parentId = options.id ?: 0,
             options = null,
             id = null,
@@ -183,17 +220,42 @@ class CategoryListViewModel(private val repository: Repository) : ViewModel() {
 
     private suspend fun getPropertiesForSubCategory(subCategory: Category): List<CategoryProperty> {
         val id = subCategory.id ?: return emptyList()//TODO handle this case
+        _screenStateFlow.emit(screenState.copy(isLoading = true))
         return when (val result = repository.getCategoryProperties(id)) {
-            is Success -> result.data
-            is Error -> emptyList()
+            is Success -> {
+                _screenStateFlow.emit(screenState.copy(isLoading = false))
+                result.data
+            }
+
+            is Error -> {
+                _screenStateFlow.emit(
+                    screenState.copy(
+                        isLoading = false,
+                        error = result.error.message
+                    )
+                )
+                emptyList()
+            }
         }
     }
 
     private suspend fun getChildOptions(option: PropertyOption): List<CategoryProperty> {
         val id = option.id ?: return emptyList()//TODO handle this case
+        _screenStateFlow.emit(screenState.copy(isLoading = true))
         return when (val result = repository.getOptionsChild(id)) {
-            is Success -> result.data
-            is Error -> emptyList()
+            is Success -> {
+                _screenStateFlow.emit(screenState.copy(isLoading = false))
+                result.data
+            }
+            is Error -> {
+                _screenStateFlow.emit(
+                    screenState.copy(
+                        isLoading = false,
+                        error = result.error.message
+                    )
+                )
+                emptyList()
+            }
         }
     }
 

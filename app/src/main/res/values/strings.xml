@@ -47,4 +47,6 @@
     <string name="main_category">Main Category</string>
     <string name="sub_category_property">Category Property</string>
     <string name="property_options">Property Options</string>
+    <string name="submit">Submit</string>
+    <string name="required_field">You must edit this</string>
 </resources>

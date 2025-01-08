@@ -9,7 +9,16 @@
         android:id="@+id/FirstFragment"
         android:name="com.example.mazady.view.category.CategoryListFragment"
         android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_categories">
+        tools:layout="@layout/fragment_category_list">
 
+        <action
+            android:id="@+id/selection_to_presenter_action"
+            app:destination="@id/SecondFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/SecondFragment"
+        android:name="com.example.mazady.view.category.CategoryPresenterFragment"
+        android:label="@string/second_fragment_label"
+        tools:layout="@layout/category_presenter_fragment" />
 </navigation>

@@ -8,8 +8,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.mazady.R
 import com.example.mazady.databinding.FragmentCategoryListBinding
+import com.example.mazady.models.ScreenState
+import com.example.mazady.utils.gone
+import com.example.mazady.utils.show
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -38,13 +44,38 @@ class CategoryListFragment : Fragment() {
         setupSelectionList()
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.userSelectionFlow.collectLatest { items ->
                     if (items.isEmpty()) return@collectLatest
                     adapter.submitList(items)
                 }
             }
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.screenStateFlow.collectLatest(::onCollectScreenState)
+            }
+        }
+
+
+        binding.submitButton.setOnClickListener {
+            val isValidated = viewModel.validateData()
+            if (isValidated) {
+                // move to the next screen
+                findNavController().navigate(R.id.selection_to_presenter_action)
+            }
+        }
+    }
+
+    private fun onCollectScreenState(screenState: ScreenState) {
+        if (screenState.isLoading) binding.progressBar.show() else binding.progressBar.gone()
+        if (!screenState.error.isNullOrEmpty()) createErrorSnackbar(screenState.error)
+        if (screenState.submitButtonVisible) binding.submitButton.show() else binding.submitButton.gone()
+    }
+
+    private fun createErrorSnackbar(errorMessage: String) {
+        Snackbar.make(binding.root, errorMessage, Snackbar.LENGTH_SHORT).show()
     }
 
     private fun setupSelectionList() {

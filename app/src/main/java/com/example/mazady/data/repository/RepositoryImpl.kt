@@ -27,7 +27,7 @@ class RepositoryImpl(private val remoteDataSource: RemoteDataSource) : Repositor
     override suspend fun getCategoryProperties(categoryId: Int): MazadyResult<List<CategoryProperty>> {
         return try {
             val response = remoteDataSource.getCategoryProperties(categoryId)
-            if (response.code == 200 && !response.data.isNullOrEmpty()) {
+            if (response.code == 200 && response.data != null) {
                 Success(response.data.map { it.addedOtherOption() })
             } else {
                 Error(Exception(response.msg))
@@ -40,7 +40,7 @@ class RepositoryImpl(private val remoteDataSource: RemoteDataSource) : Repositor
     override suspend fun getOptionsChild(optionId: Int): MazadyResult<List<CategoryProperty>> {
         return try {
             val response = remoteDataSource.getOptionsChild(optionId)
-            if (response.code == 200 && !response.data.isNullOrEmpty()) {
+            if (response.code == 200 && response.data != null) {
                 Success(response.data.map { it.addedOtherOption() } )
             } else {
                 Error(Exception(response.msg))
